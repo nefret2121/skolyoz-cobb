@@ -59,6 +59,7 @@ bir skolyoz röntgenidir: **File:Scoliosis_recklinghausen.jpg**
 tüm omurga, T4–T10 ~75°. Üzerindeki Cobb çizgileri örnek/temsilidir; hekim düzeltir.
 Depoda hasta kimliği içeren hiçbir veri yoktur.
 
-⚠️ Yayına almadan önce bu görselin **lisansını ve gerekli atıf metnini** Commons
-sayfasının "Licensing" bölümünden teyit edip buraya (ve lisans gerektiriyorsa
-sayfanın altına görünür bir künye olarak) ekleyin.
+**Lisans:** Creative Commons **CC BY 2.0** — Gkiokas A, Hadzimichalis S, Vasiliadis E,
+Katsalouli M, Kannas G. *Scoliosis* 2006 (DOI:10.1186/1748-7161-1-10). Görselin üzerine
+örnek Cobb ölçüm çizgileri eklenmiştir (değişiklik yapılmıştır). Künye, uygulamanın ana
+sayfasının altında görünür olarak yer alır.
