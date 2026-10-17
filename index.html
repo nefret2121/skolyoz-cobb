@@ -1,3 +1,8 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="claude:viewport-fit-sides" content="cover">
 <title>Skolyoz Cobb Ölçüm</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,6 +33,7 @@
     color-scheme:light;
   }
   *{box-sizing:border-box}
+  [hidden]{display:none!important}
   html{-webkit-text-size-adjust:100%}
   body{margin:0;color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;
     background:
@@ -181,6 +187,8 @@
   .page-foot{padding:14px 20px;border-top:1px solid var(--line);color:var(--muted);font-size:.8rem;text-align:center}
   .pane{display:none}.pane.on{display:block}
 </style>
+</head>
+<body>
 
 <!-- ======================= ANA SAYFA ======================= -->
 <div id="view-home" class="pane on">
@@ -237,7 +245,7 @@
           <button class="sp"></button><button onclick="nudge(0,1)" aria-label="Aşağı"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 17l-6.5-10h13z"/></svg></button><button class="sp"></button>
         </div>
       </div>
-      <p class="hint-line">Boş alanı sürükle = kaydır · tekerlek = yakınlaştır · daireleri sürükle = çizgi uçları · çizgiye bas-sürükle = paralel taşı</p>
+      <p class="hint-line">Boş alanı sürükle = kaydır · iki parmak / tekerlek = yakınlaştır · yuvarlakları sürükle = çizgi uçları · çizgiye bas-sürükle = paralel taşı</p>
     </section>
 
     <aside class="rail">
@@ -259,8 +267,8 @@
           <label>Üst uç omur<input id="ustOmur" placeholder="ör. T6" oninput="S.ustOmur=this.value"></label>
           <label>Alt uç omur<input id="altOmur" placeholder="ör. L1" oninput="S.altOmur=this.value"></label>
         </div>
-        <div class="selrow">Seçili tutamak: <b id="selName">yok</b></div>
-        <div class="hint-line">Tutamağa tıkla → seç; sonra ok tuşları (Shift = 0.2px) ya da görüntüdeki panel.</div>
+        <div class="selrow">Seçili nokta: <b id="selName">yok</b></div>
+        <div class="hint-line">Çizgi ucundaki yuvarlağa dokun → seç; sonra ok paneli ya da ok tuşları (Shift = 0.2px).</div>
       </section>
       <hr class="div">
       <section class="rail-sec">
@@ -409,7 +417,7 @@ stage.addEventListener('pointermove',e=>{if(ptrs.has(e.pointerId))ptrs.set(e.poi
   if(pan){S.view.tx=pan.tx+(e.clientX-pan.x);S.view.ty=pan.ty+(e.clientY-pan.y);applyView();}});
 function endPtr(e){ptrs.delete(e.pointerId);if(ptrs.size<2)pinch=null;drag=null;linedrag=null;if(pan){pan=null;stage.classList.remove('pan');}}
 stage.addEventListener('pointerup',endPtr);stage.addEventListener('pointercancel',endPtr);
-function render(){const s=S.view.s||1,R=8/s,LW=2/s,HW=2/s,FS=15/s;const p=S.pts;let svg='';
+function render(){const s=S.view.s||1,R=(matchMedia('(pointer:coarse)').matches?12:8)/s,LW=2/s,HW=2/s,FS=15/s;const p=S.pts;let svg='';
   if(p.u1&&!S.hideOverlay){
     svg+=lineExt(p.u1,p.u2,UPC,LW)+lineExt(p.l1,p.l2,LOWC,LW);
     svg+=seg(p.u1,p.u2,UPC,LW)+seg(p.l1,p.l2,LOWC,LW);
@@ -438,7 +446,7 @@ function hitLine(a,b,ln){const W=(matchMedia('(pointer:coarse)').matches?26:16)/
 function boxPoly(b,c,lab){if(!b)return '';const o=[b[0],b[1],b[3],b[2]].map(q=>q[0]+','+q[1]).join(' ');
   const tx=Math.min(b[0][0],b[2][0]),ty=Math.min(b[0][1],b[1][1]);
   return `<polygon points="${o}" fill="${c}" fill-opacity="0.12" stroke="${c}" stroke-width="${2/S.view.s}" stroke-opacity="0.8"/>`+`<text x="${tx}" y="${ty-6/S.view.s}" font-size="${13/S.view.s}" fill="#fff" font-weight="700" paint-order="stroke" stroke="#000" stroke-width="${0.6/S.view.s}">${lab}</text>`;}
-function lineExt(a,b,c,w){const d=[b.x-a.x,b.y-a.y];const n=Math.hypot(d[0],d[1])||1;const ux=d[0]/n,uy=d[1]/n;const L=Math.max(S.imgW,S.imgH)*1.4;
+function lineExt(a,b,c,w){const d=[b.x-a.x,b.y-a.y];const n=Math.hypot(d[0],d[1])||1;const ux=d[0]/n,uy=d[1]/n;const L=Math.max(S.imgW,S.imgH)*(matchMedia('(pointer:coarse)').matches?0.28:0.45);
   return `<line x1="${a.x-ux*L}" y1="${a.y-uy*L}" x2="${b.x+ux*L}" y2="${b.y+uy*L}" stroke="#000" stroke-opacity=".35" stroke-width="${w*2.2}" stroke-dasharray="${6/S.view.s} ${5/S.view.s}"/>`
   +`<line x1="${a.x-ux*L}" y1="${a.y-uy*L}" x2="${b.x+ux*L}" y2="${b.y+uy*L}" stroke="${c}" stroke-width="${w}" stroke-dasharray="${6/S.view.s} ${5/S.view.s}" opacity="0.85"/>`;}
 let fine=false;
@@ -466,3 +474,5 @@ function approve(){const a=liveAci();if(isNaN(a)){alert('Önce çizgileri yerle�
 /* ---- init ---- */
 initOrt();
 </script>
+</body>
+</html>
