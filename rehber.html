@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Skolyoz Tedavi Rehberi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F8F9FC; --panel:#ffffff; --ink:#29263D; --mut:#56566C; --line:#E4E0F0;
+    --accent:#5B3E9C; --accent2:#7050B5; --up:#9a6a2e; --flag:#b4432f; --flagbg:#F7E7E2;
+    --okbg:#EDE7F8; --warnbg:#FDF4E3; --warn:#7a4e12;
+    --serif:'Source Serif 4',Georgia,serif; --sans:'Source Sans 3',system-ui,-apple-system,sans-serif;
+    color-scheme:light;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    --bg:#17161F; --panel:#201D2C; --ink:#ECE9F6; --mut:#A49FB6; --line:#332E45;
+    --accent:#B9A6E6; --accent2:#C6B2F6; --up:#D79A6B; --flag:#E4846F; --flagbg:#3A2420;
+    --okbg:#2A2440; --warnbg:#2C2615; --warn:#D9BF7A; color-scheme:dark;
+  }}
+  :root[data-theme="dark"]{
+    --bg:#17161F; --panel:#201D2C; --ink:#ECE9F6; --mut:#A49FB6; --line:#332E45;
+    --accent:#B9A6E6; --accent2:#C6B2F6; --up:#D79A6B; --flag:#E4846F; --flagbg:#3A2420;
+    --okbg:#2A2440; --warnbg:#2C2615; --warn:#D9BF7A; color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  body{background:var(--bg);color:var(--ink);margin:0;font-family:var(--sans);line-height:1.55}
+  .wrap{max-width:860px;margin:0 auto;
+    padding-left:max(16px,env(safe-area-inset-left,0px));
+    padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:22px}
+  .topnav{font-size:.9rem;margin-bottom:14px}
+  .topnav a{color:var(--accent2);text-decoration:none;font-weight:600}
+  .topnav a:hover{text-decoration:underline}
+  h1{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,4vw,1.9rem);margin:0 0 4px;text-wrap:balance}
+  .sub{color:var(--mut);font-size:.9rem;margin-bottom:16px}
+  h2{font-family:var(--sans);font-size:1.12rem;margin:28px 0 10px;color:var(--accent);
+    border-bottom:1px solid var(--line);padding-bottom:5px}
+  h3{font-size:.98rem;margin:16px 0 5px}
+  p{margin:7px 0}
+  .banner{background:var(--flagbg);border:1px solid var(--flag);color:var(--flag);
+    border-radius:10px;padding:11px 13px;font-size:.86rem;margin-bottom:18px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:14px 16px;margin:12px 0;box-shadow:0 6px 18px rgba(70,56,120,.06)}
+  .band{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+  .deg{font-weight:800;font-size:1.05rem;color:var(--accent2);min-width:92px}
+  .tag{font-size:.72rem;padding:2px 9px;border-radius:999px;border:1px solid var(--line);
+    background:var(--okbg);color:var(--accent);white-space:nowrap}
+  ul{margin:6px 0;padding-left:20px}
+  li{margin:4px 0}
+  .muted{color:var(--mut);font-size:.84rem}
+  table{width:100%;border-collapse:collapse;margin:8px 0;font-size:.86rem}
+  th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+  th{background:var(--okbg);color:var(--accent);font-weight:700}
+  .pill{display:inline-block;font-size:.7rem;padding:1px 8px;border-radius:999px;
+    background:var(--warnbg);color:var(--warn);border:1px solid var(--line);margin-left:4px}
+  .src{font-size:.8rem;color:var(--mut)}
+  .src a{color:var(--accent2)}
+  code{background:var(--okbg);padding:1px 5px;border-radius:5px;font-size:.85em}
+  .backbar{margin-top:30px;border-top:1px solid var(--line);padding-top:16px}
+  .backbar a{display:inline-block;color:#fff;background:linear-gradient(180deg,#7E5EC4,#7050B5);
+    text-decoration:none;font-weight:600;padding:9px 16px;border-radius:10px;font-size:.92rem}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="topnav"><a href="./index.html">← Cobb ölçüm aracı</a></div>
+
+  <h1>Skolyoz — Tedavi &amp; Egzersiz Rehberi</h1>
+  <div class="sub">FTR hekimleri için eğitici özet · Cobb açısı + kemik olgunluğuna göre genel yaklaşımlar</div>
+
+  <div class="banner">
+    ⚠️ Bu metin <b>eğitici genel bilgidir, kişiye özel tıbbi karar değildir.</b> Yaş, kemik olgunluğu
+    (Risser/Sanders/menarş), eğrinin ilerleme hızı, paterni ve belirtiler kararı değiştirir.
+    Nihai değerlendirme ve tedavi, hastayı gören hekim ve ekibindir. Yapay zekâ Cobb ölçümü
+    <b>ağır eğrilerde gerçeğinden küçük</b> çıkabilir — ölçümü hekim doğrular.
+  </div>
+
+  <h2>1 · Açı + olgunluğa göre genel yaklaşım</h2>
+  <p class="muted">Aralıklar adölesan idiyopatik skolyoz (AİS) içindir; değerler kılavuz temelli genel
+    eşiklerdir, kesin sınır değildir.</p>
+
+  <div class="card">
+    <div class="band"><span class="deg">&lt; 10°</span><span class="tag">skolyoz sayılmaz</span></div>
+    <p>Omurga asimetrisi kabul edilir, skolyoz tanısı konmaz. Tedavi gerekmez; şüpheli olgu
+      büyüme çağındaysa klinik takip yeterli.</p>
+  </div>
+
+  <div class="card">
+    <div class="band"><span class="deg">10 – 20°</span><span class="tag">gözlem ± egzersiz</span></div>
+    <ul>
+      <li><b>Gözlem:</b> büyüme sürüyorsa ~4–6 ayda bir klinik + gerektiğinde grafi ile ilerleme izlemi.</li>
+      <li><b>Skolyoza özgü egzersiz (PSSE/Schroth):</b> özellikle büyüme döneminde, ilerleme eğilimi
+        olan eğride gündeme gelir; amaç ilerleme riskini azaltmak ve postür/gövde simetrisini desteklemek.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="band"><span class="deg">20 – 25°</span><span class="tag">korse gündeme gelebilir</span></div>
+    <p>Büyüme sürerken <b>belgelenmiş ilerleme (≥5°)</b> varsa ya da düşük olgunlukta (Risser 0–2)
+      korse değerlendirmesi gündeme gelir. Egzersiz programı sürdürülür.</p>
+  </div>
+
+  <div class="card">
+    <div class="band"><span class="deg">25 – 40/45°</span><span class="tag">korse + egzersiz</span></div>
+    <ul>
+      <li><b>Korse (büyüme sürerken):</b> bu aralık korsenin asıl endikasyon alanıdır. Tipine göre
+        tam gün (~18–23 saat) ya da gece/kısmi kullanım. <span class="pill">BrAIST: korse, cerrahiye
+        ilerlemeyi anlamlı azaltır; etki giyilen saatle doz-ilişkilidir</span></li>
+      <li><b>PSSE/Schroth</b> korseye eşlik eder.</li>
+      <li>Korse adaylığı (SRS/BrAIST ölçütü): ~10+ yaş, Risser 0–2, Cobb 20–40°, kızlarda menarş
+        öncesi ya da &lt;1 yıl sonrası.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="band"><span class="deg">&gt; 45 – 50°</span><span class="tag">cerrahi değerlendirme</span></div>
+    <p>Büyüme kalan çocukta &gt;45° (bazı yazarlarda 40°) ve matür hastada ilerleyen &gt;50° eğride
+      <b>cerrahi görüş</b> (posterior spinal füzyon vb.) gündeme gelir. SOSORT, paylaşılan karar ve
+      seçili olguda konservatif yaklaşıma daha açıktır — karar multidisipliner ve hastaya özeldir.</p>
+  </div>
+
+  <h2>2 · Skolyoza özgü egzersiz (PSSE)</h2>
+  <p>PSSE (Physiotherapeutic Scoliosis-Specific Exercises) — Schroth, SEAS, BSPTS gibi yöntemler —
+    eğriye özel üç-boyutlu düzeltme, otokorreksiyon ve solunum teknikleri içerir. Genel spor/jimnastik
+    değildir; <b>sertifikalı fizyoterapist</b> eğriye göre kişiselleştirir.</p>
+  <h3>Genel ilkeler (program fizyoterapistçe belirlenir)</h3>
+  <ul>
+    <li>Eğriye özgü <b>otokorreksiyon</b> (3 boyutlu hizalama) ve bunu günlük postüre taşıma.</li>
+    <li>Konkav tarafı açan <b>yönlendirilmiş solunum</b> (rotasyonel breathing).</li>
+    <li>Gövde <b>stabilizasyon/enduransı</b> ve simetri farkındalığı.</li>
+    <li>Düzenli ev programı + aralıklı denetim; korse kullananda korseyle uyumlu çalışma.</li>
+  </ul>
+  <p class="muted">Kanıt: skolyoza özgü egzersizlerin standart bakıma eklenmesi, büyüme çağındaki
+    hafif–orta eğride ilerlemeyi azaltmada standart bakıma üstün bulunmuştur (ör. Schroth RCT'leri).
+    Etki; eğri, olgunluk ve uyuma bağlıdır.</p>
+
+  <h2>3 · Korse</h2>
+  <table>
+    <tr><th>Tip</th><th>Kullanım</th><th>Not</th></tr>
+    <tr><td>TLSO / Boston (rijit)</td><td>Tam gün ~18–23 sa</td><td>En yaygın; torakolomber/lomber eğride</td></tr>
+    <tr><td>Chêneau / Rigo-Chêneau</td><td>Tam gün</td><td>Üç-boyutlu düzeltme odaklı</td></tr>
+    <tr><td>Gece korsesi (Providence/Charleston)</td><td>Yalnız gece</td><td>Seçili tek eğride; aşırı düzeltme ilkesi</td></tr>
+  </table>
+  <p><b>Kritik nokta:</b> korsenin etkisi <b>giyilen saatle doğru orantılıdır</b> (BrAIST). Amaç,
+    büyüme bitene kadar eğriyi cerrahi eşiğin (~50°) altında tutmaktır; düzeltme garantisi değil,
+    ilerlemeyi durdurma hedefi.</p>
+
+  <h2>4 · İlerleme ve olgunluk</h2>
+  <ul>
+    <li><b>İlerleme tanımı:</b> ardışık ölçümlerde <b>&gt;5°</b> artış anlamlı kabul edilir
+      (±5° içi stabil, &gt;5° azalma düzelme). Tek grafide ölçüm hatası payı unutulmamalı.</li>
+    <li><b>Olgunluk kaldıkça risk artar:</b> düşük Risser (0–2), menarş öncesi, Sanders düşük →
+      ilerleme riski yüksek → daha yakın izlem/korse.</li>
+    <li><b>Matürasyon sonrası:</b> büyük torakal eğriler (&gt;50°) erişkinde de yılda ~0.5–1°
+      ilerleyebilir; bu nedenle eşik yakını olgular erişkinde de izlenir.</li>
+  </ul>
+
+  <h2>5 · Kırmızı bayraklar (ileri tetkik / sevk)</h2>
+  <ul>
+    <li>Hızlı ilerleme (kısa sürede ≥5–10°), beklenmedik ağrı.</li>
+    <li>Atipik patern (sol torakal eğri, kısa keskin eğri), nörolojik bulgu, cilt/ayak bulguları →
+      altta yatan neden açısından değerlendirme (MR vb.).</li>
+    <li>Çok erken yaş (jüvenil/infantil) başlangıç.</li>
+  </ul>
+
+  <h2>Kaynaklar</h2>
+  <p class="src">
+    SOSORT 2016 kılavuzu (konservatif tedavi, PSSE, korse);
+    Scoliosis Research Society — korse/cerrahi ölçütleri;
+    BrAIST (Weinstein ve ark., NEJM 2013) — korsenin cerrahiye ilerlemeyi azaltması ve saat-doz ilişkisi.
+    Bu rehber bu kaynakların genel çerçevesine dayanır; güncel tam metin ve kişiye özel karar için
+    hekim değerlendirmesi esastır.
+  </p>
+
+  <div class="backbar"><a href="./index.html">← Cobb ölçüm aracına dön</a></div>
+</div>
+</body>
+</html>

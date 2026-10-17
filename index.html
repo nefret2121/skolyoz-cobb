@@ -133,7 +133,7 @@
 
   /* ---- cam yön paneli ---- */
   #nudgeFloat{position:absolute;right:calc(14px + env(safe-area-inset-right,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:8;
-    display:none;grid-template-columns:repeat(3,42px);grid-template-rows:repeat(3,42px);gap:7px;padding:10px;border-radius:22px;
+    display:none;grid-template-columns:repeat(3,33px);grid-template-rows:repeat(3,33px);gap:5px;padding:7px;border-radius:17px;
     background:rgba(227,222,246,.40);-webkit-backdrop-filter:blur(17px) saturate(135%);backdrop-filter:blur(17px) saturate(135%);
     border:1px solid rgba(255,255,255,.55);
     box-shadow:inset 0 1px 0 rgba(255,255,255,.72), inset 0 -2px 3px rgba(120,110,160,.22), 0 12px 28px rgba(55,42,100,.32)}
@@ -142,7 +142,7 @@
     background:radial-gradient(130% 130% at 50% 16%, #ffffff 0%, #ebedfb 84%);border:1px solid rgba(255,255,255,.92);
     box-shadow:inset 0 2px 2px rgba(255,255,255,.96), inset 0 -3px 6px rgba(150,140,195,.22),
       -3px 3px 10px rgba(150,232,212,.45), 3px -3px 10px rgba(198,178,246,.50), 0 6px 13px rgba(55,42,100,.28)}
-  #nudgeFloat button svg{width:15px;height:15px;display:block}
+  #nudgeFloat button svg{width:13px;height:13px;display:block}
   #nudgeFloat button:active{transform:translateY(1px);box-shadow:inset 0 3px 7px rgba(60,48,110,.36), 0 1px 3px rgba(55,42,100,.2)}
   #nudgeFloat #fineBtn2{font-size:.8rem;font-weight:600;color:var(--muted);
     background:rgba(231,227,248,.55);border:1px solid rgba(255,255,255,.4);
@@ -202,6 +202,7 @@
       <div class="cta-row">
         <button class="btn-primary" onclick="homeUpload()">Grafi yükle</button>
         <button class="btn-ghost" onclick="goOlcumDemo()">Yaklaşık ölçümü gör</button>
+        <a class="btn-ghost" href="./rehber.html" style="text-decoration:none;display:inline-flex;align-items:center">Tedavi &amp; Egzersiz Rehberi</a>
         <input id="homeFile" type="file" accept="image/*" hidden onchange="homeFilePicked(event)">
       </div>
       <ol class="flow">
