@@ -173,6 +173,8 @@
     color:#7a4e12;background:linear-gradient(180deg,#FDF4E3,#FAEBCF);border:1px solid #EAD3A3;
     box-shadow:inset 0 1px 0 rgba(255,255,255,.6)}
   .severe-warn b{color:#6a4310}
+  .tedavi-box{background:var(--sage-soft);border:1px solid var(--line-2);border-radius:10px;padding:10px 12px;font-size:.88rem;line-height:1.45}
+  .tedavi-tag{font-size:.72rem;padding:2px 9px;border-radius:999px;border:1px solid var(--line-2);background:#fff;color:var(--sage-ink);white-space:nowrap}
   .field-row{display:flex;gap:10px;margin:8px 0}
   .field-row label{flex:1;font-size:.78rem;color:var(--muted)}
   .field-row input{width:100%;margin-top:3px;padding:8px 10px;background:var(--glass);
@@ -202,7 +204,6 @@
       <div class="cta-row">
         <button class="btn-primary" onclick="homeUpload()">Grafi yükle</button>
         <button class="btn-ghost" onclick="goOlcumDemo()">Yaklaşık ölçümü gör</button>
-        <a class="btn-ghost" href="./rehber.html" style="text-decoration:none;display:inline-flex;align-items:center">Tedavi &amp; Egzersiz Rehberi</a>
         <input id="homeFile" type="file" accept="image/*" hidden onchange="homeFilePicked(event)">
       </div>
       <ol class="flow">
@@ -278,6 +279,12 @@
         <div class="onayli" id="onayliBox">Hekim onayı bekliyor.</div>
         <button class="btn-q" id="raporBtn" style="width:100%;margin-top:9px" onclick="downloadReport()">Rapor (PDF) indir</button>
       </section>
+      <hr class="div">
+      <section class="rail-sec">
+        <h3>Tedavi &amp; egzersiz önerisi</h3>
+        <div id="tedaviOneri" class="tedavi-box"><span style="color:var(--muted)">Ölçüm yapıldığında açıya göre genel öneri burada görünür.</span></div>
+        <div class="hint-line">Yalnızca ölçülen açıya dayalı genel bilgidir; yaş, kemik olgunluğu (Risser/Sanders) ve ilerleme kararı değiştirir — karar hekimindir. <a href="./rehber.html">Ayrıntılı rehber →</a></div>
+      </section>
     </aside>
   </div>
   <div class="page-foot">Otomatik ölçüm ağır eğride gerçeğinden küçük çıkabilir · karar ve onay hekimindir.</div>
@@ -349,6 +356,18 @@ function severeWarnUpdate(a){const el=$('severeWarn');if(!el)return;
     +(strong?' (80° ve üzerinde fark daha belirgindir)':'')
     +'. Bu değeri <b>alt sınır</b> olarak değerlendirin; uç plakları ile üst/alt uç omur seçimini dikkatle doğrulayın. Karar ve onay hekimindir.';
   el.hidden=false;}
+function tedaviBand(a){
+  if(isNaN(a))return null;
+  if(a<10)return{t:'< 10°',tag:'skolyoz sayılmaz',txt:'Skolyoz tanısı konmaz. Tedavi gerekmez; büyüme çağında klinik takip yeterli.'};
+  if(a<20)return{t:'10–20°',tag:'gözlem ± egzersiz',txt:'Gözlem (büyümede ~4–6 ayda bir) ve ilerleme eğilimi olan eğride skolyoza özgü egzersiz (PSSE/Schroth) gündeme gelir.'};
+  if(a<25)return{t:'20–25°',tag:'korse gündeme gelebilir',txt:'Belgelenmiş ilerleme (≥5°) ya da düşük olgunlukta (Risser 0–2) korse değerlendirilir; PSSE/Schroth egzersiz sürdürülür.'};
+  if(a<45)return{t:'25–45°',tag:'korse + egzersiz',txt:'Büyüme sürerken korsenin asıl endikasyon alanı; PSSE/Schroth egzersiz korseye eşlik eder.'};
+  return{t:'> 45–50°',tag:'cerrahi değerlendirme',txt:'Büyümede >45°, matürde ilerleyen >50° eğride cerrahi görüş gündeme gelir; karar multidisipliner ve hastaya özel.'};}
+function tedaviOneriUpdate(a){
+  const el=$('tedaviOneri');if(!el)return;
+  const b=tedaviBand(a);
+  if(!b){el.innerHTML='<span style="color:var(--muted)">Ölçüm yapıldığında açıya göre genel öneri burada görünür.</span>';return;}
+  el.innerHTML='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:5px"><b style="color:var(--sage-ink);font-size:1.02rem">'+b.t+'</b><span class="tedavi-tag">'+b.tag+'</span></div><div>'+b.txt+'</div>';}
 function loadImage(src,w,h,after){const hn=$('hint');if(hn)hn.hidden=true;S.src=src;S.imgW=w;S.imgH=h;xray.src=src;xray.hidden=false;
   xray.style.width=w+'px';xray.style.height=h+'px';
   ov.setAttribute('width',w);ov.setAttribute('height',h);ov.setAttribute('viewBox',`0 0 ${w} ${h}`);
@@ -439,6 +458,7 @@ function render(){const s=S.view.s||1,R=(matchMedia('(pointer:coarse)').matches?
       svg+=`<text x="${mx}" y="${my}" font-size="${FS*1.35}" font-weight="700" font-family="Source Sans 3,system-ui,sans-serif" fill="#fff" stroke="#000" stroke-width="${0.7/s}" paint-order="stroke" text-anchor="middle">${a.toFixed(1)}°</text>`;}}
   ov.innerHTML=svg;const a=liveAci();$('liveAci').textContent=isNaN(a)?'—':a.toFixed(1);
   severeWarnUpdate(a);
+  tedaviOneriUpdate(a);
   const lbl={u1:'üst-sol',u2:'üst-sağ',l1:'alt-sol',l2:'alt-sağ'};const sn=$('selName');if(sn)sn.textContent=S.sel?lbl[S.sel]:'yok';
   const nf=$('nudgeFloat');if(nf){nf.classList.toggle('show',!!p.u1&&!S.hideOverlay);}}
 function seg(a,b,c,w){return `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#000" stroke-opacity=".5" stroke-width="${w*3}" stroke-linecap="round"/>`
@@ -508,7 +528,7 @@ function _reportHTML(imgData,ap){
   const imp=onayli?ap.implant:S.implant;const impP=onayli?ap.implantProb:S.implantProb;
   const impTxt=imp==='var'?('VAR'+(impP!=null?' (%'+Math.round(impP*100)+')':'')):(imp==='yok'?'yok':'kontrol edilmedi');
   const tarih=onayli?ap.ts:new Date().toLocaleString('tr-TR',{dateStyle:'short',timeStyle:'short'});
-  const severe=aci!=null&&aci>=60;
+  const severe=aci!=null&&aci>=60;const tb=tedaviBand(aci);
   const band=onayli?'<div style="background:#1f7a4d;color:#fff;font-weight:700;padding:8px 14px;border-radius:8px;font-size:15px">ONAYLI ÖLÇÜM</div>'
     :'<div style="background:#b4432f;color:#fff;font-weight:700;padding:8px 14px;border-radius:8px;font-size:15px">TASLAK — HEKİM ONAYI YOK</div>';
   const row=(k,v,st)=>'<tr><td style="padding:7px 10px;border:1px solid #E4E0F0;color:#56566C;width:46%">'+k+'</td><td style="padding:7px 10px;border:1px solid #E4E0F0;'+(st?'font-weight:700;':'')+'">'+v+'</td></tr>';
@@ -527,9 +547,10 @@ function _reportHTML(imgData,ap){
       +'</table>'
       +(severe?'<div style="margin-top:12px;background:#FDF4E3;border:1px solid #EAD3A3;border-radius:8px;padding:9px 11px;color:#7a4e12;font-size:12px"><b>Ağır eğri uyarısı.</b> Otomatik ölçüm ağır eğrilerde gerçeğinden düşük çıkabilir; bu değeri <b>alt sınır</b> olarak değerlendirin, uç plakları ve uç omur seçimini doğrulayın.</div>':'')
       +'</div></div>'
+    +(tb?'<div style="margin-top:16px;background:#EDE7F8;border:1px solid #D5CFE8;border-radius:8px;padding:11px 13px;font-size:12.5px;line-height:1.5"><b>Tedavi &amp; egzersiz önerisi ('+tb.t+' · '+tb.tag+'):</b> '+tb.txt+' <span style="color:#56566C">Yalnızca ölçülen açıya dayalı genel bilgidir; yaş, kemik olgunluğu (Risser/Sanders) ve ilerleme kararı değiştirir — karar hekimindir.</span></div>':'')
     +'<div style="margin-top:20px;border-top:1px solid #E4E0F0;padding-top:12px;color:#56566C;font-size:11.5px;line-height:1.55">'
       +'<p style="margin:0 0 6px"><b>Bu bir asistan çıktısıdır, tıbbi tanı belgesi değildir.</b> Ölçüm ve karar hekime aittir. Anatomik uç omur seviyeleri hekim tarafından girilir ve doğrulanır.</p>'
-      +'<p style="margin:0 0 6px">Açı, çizgi uçlarının özgün görüntü koordinatlarından hesaplanır; görüntünün boyutlanması açıyı değiştirmez. Genel derece/tedavi değerlendirmesi bu raporda yer almaz.</p>'
+      +'<p style="margin:0 0 6px">Açı, çizgi uçlarının özgün görüntü koordinatlarından hesaplanır; görüntünün boyutlanması açıyı değiştirmez. Yukarıdaki tedavi/egzersiz önerisi yalnızca açıya dayalı genel çerçevedir; kişiye özel plan hekime aittir.</p>'
       +(S.kaynak==='demo'?'<p style="margin:0">Örnek görsel: Gkiokas A ve ark. (2006), Wikimedia Commons, CC BY 2.0 — üzerine örnek/temsili ölçüm çizgileri eklenmiştir.</p>':'')
     +'</div></div>';}
 async function downloadReport(){
