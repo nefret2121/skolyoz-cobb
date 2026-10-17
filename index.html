@@ -226,7 +226,6 @@
         <button class="btn-q" onclick="zoom(1.25)" aria-label="Yakınlaştır">＋</button>
         <button class="btn-q" onclick="zoom(0.8)" aria-label="Uzaklaştır">－</button>
         <button class="btn-q" onclick="fitView()">Sığdır</button>
-        <button class="btn-q" id="boxBtn" aria-pressed="false" onclick="toggleBox()">Omur işaretlerini göster</button>
         <button class="btn-q" id="hideBtn" aria-pressed="false" onclick="toggleHide()">Çizgileri gizle</button>
       </div>
       <div id="stage" tabindex="0">
@@ -361,7 +360,7 @@ function loadDemo(){const d=DEMO;S.kaynak='demo';const sel=$('modelSel');sel.inn
   const med=angs[Math.floor((angs.length-1)/2)];
   let best=names[0],bd=1e9;names.forEach(m=>{const dd=Math.abs(d.models[m].aci-med);if(dd<bd){bd=dd;best=m;}});
   loadImage(DEMO_IMG,d.w,d.h,()=>{setModel(best);sel.value=best;});}
-function setModel(m){const md=DEMO.models[m];if(!md)return;S.aktifModel=m;S.sel=null;S.boxes={ust:md.ust_kutu,alt:md.alt_kutu};
+function setModel(m){const md=DEMO.models[m];if(!md)return;S.aktifModel=m;S.sel=null;
   S.modelOneri={model:m,aci:md.aci,ust_omur:md.ust_omur,alt_omur:md.alt_omur,
     pts:{u1:{x:md.ust[0][0],y:md.ust[0][1]},u2:{x:md.ust[1][0],y:md.ust[1][1]},l1:{x:md.alt[0][0],y:md.alt[0][1]},l2:{x:md.alt[1][0],y:md.alt[1][1]}}};
   S.pts=JSON.parse(JSON.stringify(S.modelOneri.pts));S.ustOmur='#'+md.ust_omur;S.altOmur='#'+md.alt_omur;
@@ -412,7 +411,6 @@ function endPtr(e){ptrs.delete(e.pointerId);if(ptrs.size<2)pinch=null;drag=null;
 stage.addEventListener('pointerup',endPtr);stage.addEventListener('pointercancel',endPtr);
 function render(){const s=S.view.s||1,R=8/s,LW=2/s,HW=2/s,FS=15/s;const p=S.pts;let svg='';
   if(p.u1&&!S.hideOverlay){
-    if(S.showBox&&S.boxes){svg+=boxPoly(S.boxes.ust,UPC,'üst uç omur')+boxPoly(S.boxes.alt,LOWC,'alt uç omur');}
     svg+=lineExt(p.u1,p.u2,UPC,LW)+lineExt(p.l1,p.l2,LOWC,LW);
     svg+=seg(p.u1,p.u2,UPC,LW)+seg(p.l1,p.l2,LOWC,LW);
     svg+=hitLine(p.u1,p.u2,'u')+hitLine(p.l1,p.l2,'l');
@@ -445,7 +443,6 @@ function lineExt(a,b,c,w){const d=[b.x-a.x,b.y-a.y];const n=Math.hypot(d[0],d[1]
   +`<line x1="${a.x-ux*L}" y1="${a.y-uy*L}" x2="${b.x+ux*L}" y2="${b.y+uy*L}" stroke="${c}" stroke-width="${w}" stroke-dasharray="${6/S.view.s} ${5/S.view.s}" opacity="0.85"/>`;}
 let fine=false;
 function toggleFine(){fine=!fine;if($('fineBtn2'))$('fineBtn2').textContent=fine?'0.2 px':'1 px';}
-function toggleBox(){S.showBox=!S.showBox;$('boxBtn').setAttribute('aria-pressed',S.showBox);render();}
 function toggleHide(){S.hideOverlay=!S.hideOverlay;$('hideBtn').setAttribute('aria-pressed',S.hideOverlay);render();}
 function nudge(dx,dy){if(!S.sel||!S.pts[S.sel])return;const st=fine?0.2:1;const p=S.pts[S.sel];
   p.x=Math.max(0,Math.min(S.imgW,p.x+dx*st));p.y=Math.max(0,Math.min(S.imgH,p.y+dy*st));render();}
