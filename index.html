@@ -275,6 +275,7 @@
         <h3>Onaylı ölçüm</h3>
         <button class="btn-primary" style="width:100%" onclick="approve()">Ölçümü onayla</button>
         <div class="onayli" id="onayliBox">Hekim onayı bekliyor.</div>
+        <button class="btn-q" id="raporBtn" style="width:100%;margin-top:9px" onclick="downloadReport()">Rapor (PDF) indir</button>
       </section>
     </aside>
   </div>
@@ -469,7 +470,89 @@ function approve(){const a=liveAci();if(isNaN(a)){alert('Önce çizgileri yerle�
   const box=$('onayliBox');box.className='onayli done';
   box.innerHTML='<b class="num">'+rec.aci.toFixed(1)+'°</b> onaylandı · '+rec.ts
     +(rec.aci>=60?'<div style="margin-top:6px;color:#7a4e12;background:linear-gradient(180deg,#FDF4E3,#FAEBCF);border:1px solid #EAD3A3;border-radius:8px;padding:6px 9px;font-size:.82rem;line-height:1.4">Ağır eğri: otomatik ölçüm gerçeğinden düşük olabilir; bu değer alt sınırdır, hekim kontrolü esastır.</div>':'')
-    +'<div style="margin-top:4px;color:var(--muted);font-size:.84rem">Rapor ve açıklama bir sonraki adımda bu onaya bağlanır.</div>';}
+    +'<div style="margin-top:4px;color:var(--muted);font-size:.84rem">Bu onayı PDF rapor olarak indirebilirsiniz (aşağıdaki “Rapor (PDF) indir”).</div>';}
+
+/* ---- PDF rapor ---- */
+function _loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>rej(new Error('yüklenemedi: '+src));document.head.appendChild(s);});}
+let _pdfLibs=false;
+async function _ensurePdfLibs(){
+  if(_pdfLibs)return;
+  if(!window.jspdf)await _loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+  if(!window.html2canvas)await _loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+  _pdfLibs=true;}
+function _reportImage(){
+  if(!S.src||!S.imgW)return null;
+  const cv=document.createElement('canvas');cv.width=S.imgW;cv.height=S.imgH;const cx=cv.getContext('2d');
+  cx.drawImage(xray,0,0,S.imgW,S.imgH);const p=S.pts;
+  if(p.u1){
+    const dash=Math.max(6,S.imgW*0.012),gap=Math.max(4,S.imgW*0.009);
+    const line=(a,b,col)=>{const dx=b.x-a.x,dy=b.y-a.y,n=Math.hypot(dx,dy)||1,ux=dx/n,uy=dy/n,L=Math.max(S.imgW,S.imgH)*0.33;
+      cx.save();cx.setLineDash([dash,gap]);cx.strokeStyle=col;cx.globalAlpha=.85;cx.lineWidth=Math.max(2,S.imgW*0.004);
+      cx.beginPath();cx.moveTo(a.x-ux*L,a.y-uy*L);cx.lineTo(b.x+ux*L,b.y+uy*L);cx.stroke();cx.restore();
+      cx.save();cx.strokeStyle=col;cx.lineWidth=Math.max(3,S.imgW*0.007);cx.lineCap='round';
+      cx.beginPath();cx.moveTo(a.x,a.y);cx.lineTo(b.x,b.y);cx.stroke();cx.restore();};
+    line(p.u1,p.u2,'#e8820c');line(p.l1,p.l2,'#1f82c0');
+    const a=liveAci();
+    if(!isNaN(a)){const mx=(p.u1.x+p.u2.x+p.l1.x+p.l2.x)/4,my=(p.u1.y+p.l1.y)/2;
+      cx.font='700 '+Math.max(16,S.imgW*0.045)+'px "Source Sans 3",system-ui,sans-serif';
+      cx.textAlign='center';cx.textBaseline='middle';cx.lineJoin='round';
+      cx.lineWidth=Math.max(2,S.imgW*0.007);cx.strokeStyle='#000';cx.fillStyle='#fff';
+      cx.strokeText(a.toFixed(1)+'°',mx,my);cx.fillText(a.toFixed(1)+'°',mx,my);}}
+  try{return cv.toDataURL('image/jpeg',0.9);}catch(e){return null;}}
+function _esc(s){return String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+function _reportHTML(imgData,ap){
+  const a=liveAci();const onayli=!!ap;const aci=onayli?ap.aci:(isNaN(a)?null:a);
+  const model=(onayli?ap.model:S.aktifModel)||'—';const oneri=S.modelOneri?S.modelOneri.aci.toFixed(1)+'°':'—';
+  const ust=(onayli?ap.ust:S.ustOmur)||'doğrulanmadı';const alt=(onayli?ap.alt:S.altOmur)||'doğrulanmadı';
+  const imp=onayli?ap.implant:S.implant;const impP=onayli?ap.implantProb:S.implantProb;
+  const impTxt=imp==='var'?('VAR'+(impP!=null?' (%'+Math.round(impP*100)+')':'')):(imp==='yok'?'yok':'kontrol edilmedi');
+  const tarih=onayli?ap.ts:new Date().toLocaleString('tr-TR',{dateStyle:'short',timeStyle:'short'});
+  const severe=aci!=null&&aci>=60;
+  const band=onayli?'<div style="background:#1f7a4d;color:#fff;font-weight:700;padding:8px 14px;border-radius:8px;font-size:15px">ONAYLI ÖLÇÜM</div>'
+    :'<div style="background:#b4432f;color:#fff;font-weight:700;padding:8px 14px;border-radius:8px;font-size:15px">TASLAK — HEKİM ONAYI YOK</div>';
+  const row=(k,v,st)=>'<tr><td style="padding:7px 10px;border:1px solid #E4E0F0;color:#56566C;width:46%">'+k+'</td><td style="padding:7px 10px;border:1px solid #E4E0F0;'+(st?'font-weight:700;':'')+'">'+v+'</td></tr>';
+  return '<div style="width:794px;box-sizing:border-box;padding:40px 46px;background:#fff;color:#29263D;font-family:\'Source Sans 3\',system-ui,sans-serif;font-size:13px;line-height:1.5">'
+    +band
+    +'<h1 style="font-family:\'Source Serif 4\',Georgia,serif;font-weight:600;font-size:25px;margin:16px 0 2px">Skolyoz Cobb Ölçüm Raporu</h1>'
+    +'<div style="color:#56566C;font-size:12px;margin-bottom:16px">Tarih: '+_esc(tarih)+' · Kaynak: '+(S.kaynak==='demo'?'örnek görüntü':'yüklenen grafi')+' · Yöntem: son-plak (endplate) Cobb</div>'
+    +'<div style="display:flex;gap:22px;align-items:flex-start">'
+      +'<div style="flex:0 0 300px"><img src="'+imgData+'" style="width:300px;border:1px solid #D5CFE8;border-radius:6px;display:block"><div style="color:#56566C;font-size:11px;margin-top:6px">Üst (turuncu) ve alt (mavi) son-plak çizgileri; açı özgün koordinatlardan hesaplanır.</div></div>'
+      +'<div style="flex:1"><table style="border-collapse:collapse;width:100%;font-size:13px">'
+        +row('Model önerisi ('+_esc(model)+')',oneri)
+        +row(onayli?'Onaylı ölçüm':'Güncel ölçüm (hekim)',aci!=null?'<span style="font-size:17px;color:#5B3E9C">'+aci.toFixed(1)+'°</span>':'—',true)
+        +row('Üst uç omur',_esc(ust))+row('Alt uç omur',_esc(alt))
+        +row('Metal / implant',_esc(impTxt))
+        +row('Onaylayan hekim',onayli?'(onay kaydı)':'—')
+      +'</table>'
+      +(severe?'<div style="margin-top:12px;background:#FDF4E3;border:1px solid #EAD3A3;border-radius:8px;padding:9px 11px;color:#7a4e12;font-size:12px"><b>Ağır eğri uyarısı.</b> Otomatik ölçüm ağır eğrilerde gerçeğinden düşük çıkabilir; bu değeri <b>alt sınır</b> olarak değerlendirin, uç plakları ve uç omur seçimini doğrulayın.</div>':'')
+      +'</div></div>'
+    +'<div style="margin-top:20px;border-top:1px solid #E4E0F0;padding-top:12px;color:#56566C;font-size:11.5px;line-height:1.55">'
+      +'<p style="margin:0 0 6px"><b>Bu bir asistan çıktısıdır, tıbbi tanı belgesi değildir.</b> Ölçüm ve karar hekime aittir. Anatomik uç omur seviyeleri hekim tarafından girilir ve doğrulanır.</p>'
+      +'<p style="margin:0 0 6px">Açı, çizgi uçlarının özgün görüntü koordinatlarından hesaplanır; görüntünün boyutlanması açıyı değiştirmez. Genel derece/tedavi değerlendirmesi bu raporda yer almaz.</p>'
+      +(S.kaynak==='demo'?'<p style="margin:0">Örnek görsel: Gkiokas A ve ark. (2006), Wikimedia Commons, CC BY 2.0 — üzerine örnek/temsili ölçüm çizgileri eklenmiştir.</p>':'')
+    +'</div></div>';}
+async function downloadReport(){
+  const a=liveAci();
+  if(isNaN(a)&&S.onayGecmis.length===0){alert('Önce bir ölçüm yapın ya da örneği açın.');return;}
+  const btn=$('raporBtn');const old=btn.textContent;btn.disabled=true;btn.textContent='Rapor hazırlanıyor…';
+  try{
+    await _ensurePdfLibs();
+    const imgData=_reportImage();
+    if(!imgData){alert('Görüntü hazırlanamadı.');return;}
+    const ap=S.onayGecmis.length?S.onayGecmis[S.onayGecmis.length-1]:null;
+    const host=document.createElement('div');host.style.cssText='position:fixed;left:-10000px;top:0;z-index:-1';
+    host.innerHTML=_reportHTML(imgData,ap);document.body.appendChild(host);
+    if(document.fonts&&document.fonts.ready){try{await document.fonts.ready;}catch(e){}}
+    const node=host.firstElementChild;
+    const canvas=await html2canvas(node,{scale:2,backgroundColor:'#ffffff',useCORS:true,logging:false,windowWidth:node.offsetWidth});
+    document.body.removeChild(host);
+    const {jsPDF}=window.jspdf;const pdf=new jsPDF({unit:'mm',format:'a4'});
+    const pw=210,ph=297;let iw=pw,ih=canvas.height*pw/canvas.width;
+    if(ih>ph){ih=ph;iw=canvas.width*ph/canvas.height;}
+    pdf.addImage(canvas.toDataURL('image/jpeg',0.92),'JPEG',(pw-iw)/2,0,iw,ih);
+    pdf.save('skolyoz_cobb_raporu_'+new Date().toISOString().slice(0,10)+'.pdf');
+  }catch(e){alert('Rapor oluşturulamadı: '+(e&&e.message?e.message:e));}
+  finally{btn.disabled=false;btn.textContent=old;}}
 
 /* ---- init ---- */
 initOrt();
