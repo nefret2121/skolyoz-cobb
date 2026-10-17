@@ -51,8 +51,14 @@ olarak sunması yeterlidir (çoğu barındırma bunu kendiliğinden yapar).
 - **Ticari/halka açık sürüm öncesi** veri ve model lisanslarının ve klinik
   validasyon + regülasyon (TİTCK/CE) gereksinimlerinin ayrıca gözden geçirilmesi gerekir.
 
-## Gizlilik notu
+## Örnek görsel ve lisans
 
-`index.html` içindeki örnek film **gerçek (kimliği gizlenmiş) bir röntgendir**.
-Bu depo **özel (private)** tutulmalıdır; herkese açık bir sürüm öncesinde örnek
-görsel, onaylı/sentetik bir görselle değiştirilmelidir.
+`index.html` içine gömülü örnek film, Wikimedia Commons'tan alınan açık lisanslı
+bir skolyoz röntgenidir: **File:Scoliosis_recklinghausen.jpg**
+(https://commons.wikimedia.org/wiki/File:Scoliosis_recklinghausen.jpg) — önden (PA),
+tüm omurga, T4–T10 ~75°. Üzerindeki Cobb çizgileri örnek/temsilidir; hekim düzeltir.
+Depoda hasta kimliği içeren hiçbir veri yoktur.
+
+⚠️ Yayına almadan önce bu görselin **lisansını ve gerekli atıf metnini** Commons
+sayfasının "Licensing" bölümünden teyit edip buraya (ve lisans gerektiriyorsa
+sayfanın altına görünür bir künye olarak) ekleyin.
