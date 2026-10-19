@@ -13,7 +13,17 @@ function ensure() {
   if (session) return Promise.resolve();
   if (loading) return loading;
   loading = (async () => {
-    try { session = await ort.InferenceSession.create('./cobb_lm_fp16.onnx', { executionProviders: ['wasm'] }); }
+    // Model (48 MB) GitHub Pages'ten (CORS açık) çekilir; böylece Hostinger'a büyük dosya yüklenmez.
+    // ort.min.js ve cobb_decode.js aynı origin'den (site ile birlikte) yüklenir.
+    // NOT: Model URL'si ort'a doğrudan verilince GitHub Pages'in gzip'i yüzünden
+    // parse hatası oluyor; onun yerine baytları kendimiz indirip ort'a veriyoruz.
+    const MODEL_URL = 'https://nefret2121.github.io/skolyoz-cobb/cobb_lm_fp16.onnx';
+    try {
+      const resp = await fetch(MODEL_URL);
+      if (!resp.ok) throw new Error('model indirilemedi (HTTP ' + resp.status + ')');
+      const bytes = new Uint8Array(await resp.arrayBuffer());
+      session = await ort.InferenceSession.create(bytes, { executionProviders: ['wasm'] });
+    }
     catch (e) { loadErr = '' + ((e && e.message) || e); session = null; }
   })();
   return loading;
