@@ -249,7 +249,7 @@
       <div id="stage" tabindex="0">
         <div id="scene"><img id="xray" alt="" hidden><svg id="ov" xmlns="http://www.w3.org/2000/svg"></svg></div>
         <div id="hint">Başlamak için <b>&nbsp;Grafi yükle</b>&nbsp;(ya da örnekte yaklaşık ölçümü görün)</div>
-        <div id="autoBusy" hidden><div class="ab-spin"></div><div class="ab-t">Otomatik ölçüm yapılıyor…</div><div class="ab-s">Yapay zekâ modeli çalışıyor · lütfen bekleyin</div></div>
+        <div id="autoBusy" hidden><div class="ab-spin"></div><div class="ab-t">Otomatik ölçüm yapılıyor…</div><div class="ab-s">Yaklaşık 30 saniye–1 dakika sürebilir · lütfen bekleyin</div></div>
         <div id="nudgeFloat" onpointerdown="event.stopPropagation()">
           <button class="sp"></button><button onclick="nudge(0,-1)" aria-label="Yukarı"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 7l6.5 10h-13z"/></svg></button><button class="sp"></button>
           <button onclick="nudge(-1,0)" aria-label="Sol"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 12l10-6.5v13z"/></svg></button><button id="fineBtn2" onclick="toggleFine()" title="Adım" aria-label="Adım miktarı">1 px</button><button onclick="nudge(1,0)" aria-label="Sağ"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 12l-10 6.5v-13z"/></svg></button>
@@ -417,7 +417,7 @@ function olcumDurumUpdate(shown){
   const el=$('olcumDurum');if(!el)return;
   if(shown||!S.src){el.hidden=true;el.innerHTML='';return;}
   el.hidden=false;
-  if(S.autoState==='running'){el.innerHTML='<b>Otomatik ölçüm yapılıyor, lütfen bekleyin…</b> Yapay zekâ modeli çalışıyor (cihaza göre ~20–60 sn sürebilir). Bitince çizgileri hekim kontrol edip düzeltir.';return;}
+  if(S.autoState==='running'){el.innerHTML='<b>Otomatik ölçüm yapılıyor, lütfen bekleyin…</b> Yapay zekâ modeli çalışıyor (cihaza göre yaklaşık 30 saniye–1 dakika sürebilir). Bitince çizgileri hekim kontrol edip düzeltir.';return;}
   if(S.autoState==='failed'){el.innerHTML='<b>Otomatik ölçüm yapılamadı.</b> Uç plak çizgilerini (çizgi ucundaki yuvarlakları) kendiniz yerleştirin.';return;}
   el.innerHTML=(S.kaynak==='yukleme'
     ?'Çizgiler yapay zekâ önerisidir — <b>hekim kontrol edip düzeltmeli.</b> Bir yuvarlağı oynatınca ölçüm güncellenir.'
