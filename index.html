@@ -130,6 +130,12 @@
   #hint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
     color:#cfc9e6;font-size:.95rem;text-align:center;padding:26px}
   #hint b{color:#efecf9}
+  #autoBusy{position:absolute;inset:0;z-index:9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+    background:rgba(23,22,31,.62);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);text-align:center;padding:24px}
+  #autoBusy .ab-spin{width:38px;height:38px;border-radius:50%;border:3px solid rgba(255,255,255,.25);border-top-color:#C6B2F6;animation:abspin .8s linear infinite}
+  @keyframes abspin{to{transform:rotate(360deg)}}
+  #autoBusy .ab-t{color:#fff;font-weight:600;font-size:1rem}
+  #autoBusy .ab-s{color:#d7d2ea;font-size:.85rem;max-width:30ch}
 
   /* ---- cam yön paneli ---- */
   #nudgeFloat{position:absolute;right:calc(14px + env(safe-area-inset-right,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:8;
@@ -243,6 +249,7 @@
       <div id="stage" tabindex="0">
         <div id="scene"><img id="xray" alt="" hidden><svg id="ov" xmlns="http://www.w3.org/2000/svg"></svg></div>
         <div id="hint">Başlamak için <b>&nbsp;Grafi yükle</b>&nbsp;(ya da örnekte yaklaşık ölçümü görün)</div>
+        <div id="autoBusy" hidden><div class="ab-spin"></div><div class="ab-t">Otomatik ölçüm yapılıyor…</div><div class="ab-s">Yapay zekâ modeli çalışıyor · lütfen bekleyin</div></div>
         <div id="nudgeFloat" onpointerdown="event.stopPropagation()">
           <button class="sp"></button><button onclick="nudge(0,-1)" aria-label="Yukarı"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 7l6.5 10h-13z"/></svg></button><button class="sp"></button>
           <button onclick="nudge(-1,0)" aria-label="Sol"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 12l10-6.5v13z"/></svg></button><button id="fineBtn2" onclick="toggleFine()" title="Adım" aria-label="Adım miktarı">1 px</button><button onclick="nudge(1,0)" aria-label="Sağ"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 12l-10 6.5v-13z"/></svg></button>
@@ -347,6 +354,41 @@ async function runImplant(){
   else setStatus('ok',IC_OK,'Belirgin implant/metal görünmüyor (olasılık %'+(p*100).toFixed(0)+').');
 }
 
+/* ---- Otomatik Cobb ölçümü (yapay zeka landmark modeli; ayrı Worker, yavaş) ---- */
+let cobbWorker=null, cobbReqId=0; const cobbPending=new Map();
+function initCobb(){
+  try{
+    cobbWorker=new Worker('./cobb_worker.js');
+    cobbWorker.onmessage=(ev)=>{const{id,result,error}=ev.data;const cb=cobbPending.get(id);
+      if(cb){cobbPending.delete(id);cb(error?{error}:{result});}};
+    cobbWorker.onerror=(e)=>{const er=(e&&e.message)||'worker hatası';cobbPending.forEach(cb=>cb({error:er}));cobbPending.clear();};
+  }catch(e){cobbWorker=null;window.__cobbErr=''+((e&&e.message)||e);}
+}
+function preprocessCobb(imgEl){const c=document.createElement('canvas');c.width=1024;c.height=1024;
+  const x=c.getContext('2d');x.drawImage(imgEl,0,0,1024,1024);
+  const d=x.getImageData(0,0,1024,1024).data,N=1024*1024;const f=new Float32Array(3*N);
+  for(let i=0;i<N;i++){f[i]=(d[i*4+2]/255)-0.5;f[N+i]=(d[i*4+1]/255)-0.5;f[2*N+i]=(d[i*4]/255)-0.5;} // BGR, /255-0.5
+  return f;}
+function inferCobb(data,W,H){return new Promise((res)=>{
+  if(!cobbWorker){res({error:window.__cobbErr||'model yüklenemedi'});return;}
+  const id=++cobbReqId;cobbPending.set(id,res);
+  cobbWorker.postMessage({id,data,W,H},[data.buffer]);});}
+async function runCobb(){
+  S.autoState='running';S.measured=false;render();
+  let data; try{data=preprocessCobb(xray);}catch(e){S.autoState='failed';manualPts();S.measured=false;render();return;}
+  const r=await inferCobb(data,S.imgW,S.imgH);
+  if(r.error||!r.result){S.autoState='failed';S.autoErr=r.error||'sonuc yok';manualPts();S.measured=false;render();return;}
+  const o=r.result;
+  S.modelOneri={model:'yapay zeka',aci:o.major,ust_omur:'',alt_omur:'',
+    pts:{u1:{x:o.u1[0],y:o.u1[1]},u2:{x:o.u2[0],y:o.u2[1]},l1:{x:o.l1[0],y:o.l1[1]},l2:{x:o.l2[0],y:o.l2[1]}}};
+  S.pts=JSON.parse(JSON.stringify(S.modelOneri.pts));
+  S.aktifModel='yapay zeka';S.savedModel='__ai__';S.measured=true;S.autoState='done';
+  $('modelAci').textContent=o.major.toFixed(1)+'°';
+  const rb=$('resetBtn');if(rb)rb.disabled=false;
+  const sel=$('modelSel');if(sel){sel.innerHTML='<option>yapay zeka · otomatik</option>';sel.disabled=true;}
+  render();
+}
+
 /* ---- ölçüm motoru ---- */
 function vecAngle(a,b,c,d){const u=[b.x-a.x,b.y-a.y],v=[d.x-c.x,d.y-c.y];
   const nu=Math.hypot(u[0],u[1]),nv=Math.hypot(v[0],v[1]);if(nu<1e-6||nv<1e-6)return NaN;
@@ -375,8 +417,10 @@ function olcumDurumUpdate(shown){
   const el=$('olcumDurum');if(!el)return;
   if(shown||!S.src){el.hidden=true;el.innerHTML='';return;}
   el.hidden=false;
+  if(S.autoState==='running'){el.innerHTML='<b>Otomatik ölçüm yapılıyor, lütfen bekleyin…</b> Yapay zekâ modeli çalışıyor (cihaza göre ~20–60 sn sürebilir). Bitince çizgileri hekim kontrol edip düzeltir.';return;}
+  if(S.autoState==='failed'){el.innerHTML='<b>Otomatik ölçüm yapılamadı.</b> Uç plak çizgilerini (çizgi ucundaki yuvarlakları) kendiniz yerleştirin.';return;}
   el.innerHTML=(S.kaynak==='yukleme'
-    ?'Bu grafi için <b>otomatik Cobb önerisi yok</b> (otomatik öneri yalnızca örnek görselde çalışır). Uç plak çizgilerini (çizgi ucundaki yuvarlakları) kendiniz yerleştirin; ölçüm tamamlanınca değer, rapor ve öneriler görünür.'
+    ?'Çizgiler yapay zekâ önerisidir — <b>hekim kontrol edip düzeltmeli.</b> Bir yuvarlağı oynatınca ölçüm güncellenir.'
     :'Ölçüm bekleniyor — uç plak çizgilerini (yuvarlakları) yerleştirin.');}
 function loadImage(src,w,h,after){const hn=$('hint');if(hn)hn.hidden=true;S.src=src;S.imgW=w;S.imgH=h;xray.src=src;xray.hidden=false;
   xray.style.width=w+'px';xray.style.height=h+'px';
@@ -385,10 +429,10 @@ function loadImage(src,w,h,after){const hn=$('hint');if(hn)hn.hidden=true;S.src=
   if(window.__noImplant)return;
   if(xray.complete)runImplant();else xray.onload=()=>runImplant();}
 function loadFile(f){const rd=new FileReader();rd.onload=e=>{const im=new Image();im.onload=()=>{
-  S.kaynak='yukleme';S.modelOneri=null;S.aktifModel=null;S.savedModel=null;S.boxes=null;S.measured=false;
-  const sel=$('modelSel');sel.innerHTML='<option>model yok · manuel</option>';sel.disabled=true;
+  S.kaynak='yukleme';S.modelOneri=null;S.aktifModel=null;S.savedModel=null;S.boxes=null;S.measured=false;S.autoState=null;S.pts={u1:null,u2:null,l1:null,l2:null};
+  const sel=$('modelSel');sel.innerHTML='<option>yapay zeka · otomatik</option>';sel.disabled=true;
   $('modelAci').textContent='—';const rb=$('resetBtn');if(rb)rb.disabled=true;
-  loadImage(e.target.result,im.naturalWidth,im.naturalHeight,()=>manualPts());render();};im.src=e.target.result;};
+  loadImage(e.target.result,im.naturalWidth,im.naturalHeight,()=>{if(cobbWorker){runCobb();}else{manualPts();S.measured=false;render();}});render();};im.src=e.target.result;};
   rd.readAsDataURL(f);}
 function uploadImg(ev){const f=ev.target.files[0];if(!f)return;loadFile(f);ev.target.value='';}
 function loadDemo(){const d=DEMO;S.kaynak='demo';const sel=$('modelSel');sel.innerHTML='';
@@ -405,7 +449,9 @@ function setModel(m){const md=DEMO.models[m];if(!md)return;S.aktifModel=m;S.sel=
   S.pts=JSON.parse(JSON.stringify(S.modelOneri.pts));S.ustOmur='#'+md.ust_omur;S.altOmur='#'+md.alt_omur;
   $('ustOmur').value=S.ustOmur;$('altOmur').value=S.altOmur;$('modelAci').textContent=md.aci.toFixed(1)+'°';
   S.savedModel=m;S.measured=true;const rb=$('resetBtn');if(rb)rb.disabled=false;render();}
-function resetToModel(){if(S.savedModel&&DEMO.models[S.savedModel]){setModel(S.savedModel);const sel=$('modelSel');if(sel)sel.value=S.savedModel;}}
+function resetToModel(){
+  if(S.aktifModel==='yapay zeka'&&S.modelOneri){S.pts=JSON.parse(JSON.stringify(S.modelOneri.pts));S.measured=true;render();return;}
+  if(S.savedModel&&DEMO.models[S.savedModel]){setModel(S.savedModel);const sel=$('modelSel');if(sel)sel.value=S.savedModel;}}
 function manualPts(){const w=S.imgW,h=S.imgH;S.pts={u1:{x:w*0.35,y:h*0.30},u2:{x:w*0.65,y:h*0.30},l1:{x:w*0.35,y:h*0.66},l2:{x:w*0.65,y:h*0.66}};}
 function manualInit(){if(!S.src){alert('Önce bir grafi yükleyin veya örneği açın.');return;}
   S.modelOneri=null;S.aktifModel=null;S.sel=null;S.boxes=null;$('modelAci').textContent='—';
@@ -475,7 +521,8 @@ function render(){const s=S.view.s||1,R=(matchMedia('(pointer:coarse)').matches?
   const ob=$('btnOnayla');if(ob)ob.disabled=!shown;
   const rb2=$('raporBtn');if(rb2)rb2.disabled=!(shown||S.onayGecmis.length);
   const lbl={u1:'üst-sol',u2:'üst-sağ',l1:'alt-sol',l2:'alt-sağ'};const sn=$('selName');if(sn)sn.textContent=S.sel?lbl[S.sel]:'yok';
-  const nf=$('nudgeFloat');if(nf){nf.classList.toggle('show',!!p.u1&&!S.hideOverlay);}}
+  const nf=$('nudgeFloat');if(nf){nf.classList.toggle('show',!!p.u1&&!S.hideOverlay);}
+  const ab=$('autoBusy');if(ab)ab.hidden=(S.autoState!=='running');}
 function seg(a,b,c,w){return `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#000" stroke-opacity=".5" stroke-width="${w*3}" stroke-linecap="round"/>`
   +`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${c}" stroke-width="${w*1.6}" stroke-linecap="round"/>`;}
 function hitLine(a,b,ln){const W=(matchMedia('(pointer:coarse)').matches?26:16)/S.view.s;
@@ -593,6 +640,7 @@ async function downloadReport(){
 
 /* ---- init ---- */
 initOrt();
+initCobb();
 </script>
 </body>
 </html>
